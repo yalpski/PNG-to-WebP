@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNG to WebP Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        .converter {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            margin: auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .converter h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .converter input[type="file"] {
+            display: block;
+            margin: 0 auto 20px auto;
+        }
+        .converter button {
+            display: block;
+            margin: 0 auto;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .converter button:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+        }
+        .result {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .result img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+        }
+        .download-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #28A745;
+            color: #fff;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="converter">
+    <h2>PNG to WebP Converter</h2>
+    <input type="file" id="pngInput" accept="image/png">
+    <button id="convertBtn" disabled>Convert to WebP</button>
+    <div class="result" id="result" style="display: none;">
+        <h3>Converted Image:</h3>
+        <img id="webpImage" src="#" alt="WebP Image">
+        <br>
+        <a id="downloadLink" class="download-link" href="#" download="converted.webp">Download WebP</a>
+    </div>
+</div>
+
+<script>
+    const pngInput = document.getElementById('pngInput');
+    const convertBtn = document.getElementById('convertBtn');
+    const resultDiv = document.getElementById('result');
+    const webpImage = document.getElementById('webpImage');
+    const downloadLink = document.getElementById('downloadLink');
+
+    let pngFile;
+
+    // Enable the convert button when a file is selected
+    pngInput.addEventListener('change', (event) => {
+        if (event.target.files && event.target.files[0]) {
+            pngFile = event.target.files[0];
+            if (pngFile.type === 'image/png') {
+                convertBtn.disabled = false;
+                resultDiv.style.display = 'none';
+            } else {
+                alert('Please select a valid PNG file.');
+                convertBtn.disabled = true;
+            }
+        }
+    });
+
+    convertBtn.addEventListener('click', () => {
+        if (!pngFile) {
+            alert('No file selected.');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+
+                // Convert to WebP with quality 0.8 (you can adjust the quality)
+                canvas.toDataURL('image/webp', 0.6, function(webpDataUrl) {
+                    webpImage.src = canvas.toDataURL('image/webp', 0.6);
+                    downloadLink.href = webpImage.src;
+                    resultDiv.style.display = 'block';
+                });
+                
+                // Alternative way without callback
+                const webpDataUrlAlt = canvas.toDataURL('image/webp', 0.6);
+                webpImage.src = webpDataUrlAlt;
+                downloadLink.href = webpDataUrlAlt;
+                resultDiv.style.display = 'block';
+            };
+            img.onerror = function() {
+                alert('Failed to load the image. Please try another file.');
+            };
+            img.src = event.target.result;
+        };
+        reader.onerror = function() {
+            alert('Failed to read the file. Please try again.');
+        };
+        reader.readAsDataURL(pngFile);
+    });
+</script>
+
+</body>
+</html>
